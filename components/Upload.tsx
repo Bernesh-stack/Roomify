@@ -4,6 +4,7 @@ import { useOutletContext } from 'react-router'
 import { PROGRESS_INTERVAL_MS, PROGRESS_STEP, REDIRECT_DELAY_MS } from '../lib/constant'
 
 interface UploadProps {
+    // done uploading and processing, now we have the base64 string of the image
     onComplete?: (base64: string) => void
 }
 
