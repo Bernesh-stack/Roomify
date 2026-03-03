@@ -3,6 +3,7 @@ import type { Route } from "./+types/home";
 import { ArrowRight, ArrowUpRight, Clock, Layers,  } from "lucide-react";
 import Button from "components/ui/Button";
 import Upload from "components/Upload";
+import { useNavigate } from "react-router";
 
 
 export function meta({}: Route.MetaArgs) {
@@ -13,6 +14,16 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
+  const navigate = useNavigate();
+  
+  const handleUploadComplete =async (base64: string) => {
+    // // TODO: navigate to render page or process the base64 data
+    // console.log('Upload complete, base64 length:', base64.length);
+    const newID = Date.now().toString();
+    navigate(`/visualizer/${newID}`);
+    return true;
+  };
+
   return (
     <div className="home">
       <Navbar/>
@@ -51,11 +62,11 @@ export default function Home() {
 
 
               </div>
-                              <h3>Upload your space</h3>
-                              <p>Supports PNG, JPEG, SVG upto 10MB</p>
+                     <h3>Upload your space</h3>
+                      <p>Supports PNG, JPEG, SVG upto 10MB</p>
             </div>
 
-            <Upload/>
+            <Upload onComplete={handleUploadComplete}/>
           </div>
 
         </div>
@@ -79,7 +90,7 @@ export default function Home() {
               </div>
               <div className="card-body">
                 <div>
-                  <h3>project Namathon</h3>
+                  <h3>project House</h3>
                   <div className="meta">
                     <Clock size={12} />
                     <span>{new Date('01.01.2027').toLocaleDateString()}</span>
