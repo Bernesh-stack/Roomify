@@ -5,6 +5,7 @@ import Button from "components/ui/Button";
 import Upload from "components/Upload";
 import { useNavigate } from "react-router";
 import { createProject } from "lib/puter.action";
+import React from "react";
 
 
 export function meta({}: Route.MetaArgs) {
@@ -18,36 +19,35 @@ export default function Home() {
   const [projects,setProjects] = React.useState<DesignItem[]>([]);
   const navigate = useNavigate();
   
-  const handleUploadComplete =async (base64: string) => {
+  const handleUploadComplete = async (base64: string) => {
     // // TODO: navigate to render page or process the base64 data
     // console.log('Upload complete, base64 length:', base64.length);
     const newID = Date.now().toString();
     const name = `Residence ${newID}`;
-    const newItem ={
+    const newItem = {
       id: newID,
       name,
-      sourceImage:base64Image,
-      renderedImage:undefined,
-      timestamp:Date.now()
+      sourceImage: base64,
+      renderedImage: undefined,
+      timestamp: Date.now()
     }
 
-
-    const saved = await createProject({item:newItem, visibility:'private'});
+    const saved = await createProject({item: newItem, visibility: 'private'});
 
     if(!saved) {
       console.error('Failed to save project');
       return false;
     }
 
-    setProjects((prev) =>[newItem,...prev]);
+    setProjects((prev) => [newItem, ...prev]);
 
-    navigate(`/visualizer/${newID}`),{
-      state:{
-        initialImage:saved.sourceImage,
-        initialRendered:saved.renderedImage || null,
+    navigate(`/visualizer/${newID}`, {
+      state: {
+        initialImage: saved.sourceImage,
+        initialRendered: saved.renderedImage || null,
         name
       }
-    }
+    });
     return true;
   };
 
@@ -108,30 +108,29 @@ export default function Home() {
             </div>
           </div>
           <div className="projects-grid">
-            {projects.map(({id,name,sourceImage,timestamp,renderedImage})) =>(
-                          <div className="project-card group">
-              <div className="preview">
-              <img src={renderedImage|| sourceImage }  alt="projects"/>
-              <div className="badge">
-                <span>Community</span>
-              </div>
-              </div>
-              <div className="card-body">
-                <div>
-                  <h3>{name}</h3>
-                  <div className="meta">
-                    <Clock size={12} />
-                    <span>{new Date(timestamp).toLocaleDateString()}</span>
-                    <span>created by You</span>
+            {projects.map(({id, name, sourceImage, timestamp, renderedImage}) => (
+              <div key={id} className="project-card group">
+                <div className="preview">
+                  <img src={renderedImage || sourceImage} alt="projects"/>
+                  <div className="badge">
+                    <span>Community</span>
                   </div>
                 </div>
-                <div className="arrow">
-                  <ArrowUpRight size={18}/>
+                <div className="card-body">
+                  <div>
+                    <h3>{name}</h3>
+                    <div className="meta">
+                      <Clock size={12} />
+                      <span>{new Date(timestamp).toLocaleDateString()}</span>
+                      <span>created by You</span>
+                    </div>
+                  </div>
+                  <div className="arrow">
+                    <ArrowUpRight size={18}/>
+                  </div>
                 </div>
               </div>
-            </div>
-            )}
-
+            ))}
           </div>
         </div>
       </section>
