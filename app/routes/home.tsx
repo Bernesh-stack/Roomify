@@ -70,7 +70,7 @@ export default function Home() {
         </p>
 
         <div className="actions">
-          <a className="cta" href="upload">
+          <a className="cta" href="#upload">
             Start Building <ArrowRight className="icon"/>
           </a>
 

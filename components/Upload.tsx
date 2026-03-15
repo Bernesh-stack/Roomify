@@ -5,10 +5,10 @@ import { PROGRESS_INTERVAL_MS, PROGRESS_STEP, REDIRECT_DELAY_MS } from '../lib/c
 
 interface UploadProps {
     // done uploading and processing, now we have the base64 string of the image
-    onComplete?: (base64: string) => void
+    onComplete?: (base64: string) => Promise<boolean | void> | boolean | void;
 }
 
-const Upload = ({ onComplete = () => {} }: UploadProps) => {
+const Upload = ({ onComplete = async () => {} }: UploadProps) => {
     const [file, setFile] = React.useState<File | null>(null)
     const [isDragging, setIsDragging] = React.useState(false)
     const [progress, setProgress] = React.useState(0)

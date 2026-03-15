@@ -1,4 +1,3 @@
-import { blob } from "stream/consumers";
 import { createHostingSlug, fetchBlobFromUrl, getHostedUrl, getImageExtension, HOSTING_CONFIG_KEY, imageUrlToPngBlob, isHostedUrl } from "./utils"
 import puter from "@heyputer/puter.js"
 
@@ -32,7 +31,7 @@ export const uploadImageToHosting = async ({hosting , url , projectId,label}:
     if(isHostedUrl(url)) return {url};
 
     try{
-        const resolved = label === rendered 
+        const resolved = label === "rendered" 
         ? await imageUrlToPngBlob(url).then((blob) => blob ?{blob,contentType: "image/png"} : null)
         :await fetchBlobFromUrl(url)
 
@@ -51,7 +50,7 @@ export const uploadImageToHosting = async ({hosting , url , projectId,label}:
         await puter.fs.mkdir(dir,{createMissingParents: true});
         await puter.fs.write(filePath,uploadfile)
 
-        const hostedUrl = getHostedUrl({subdomain:hostingsubdomain},filePath);
+    const hostedUrl = getHostedUrl({subdomain: hosting.subdomain},filePath);
         return hostedUrl ? {url: hostedUrl} : null;
 
     }

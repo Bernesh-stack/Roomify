@@ -28,7 +28,7 @@ export  const createProject = async ({item}:CreateProjectParams):Promise<DesignI
     const hostedRender = projectId && item.renderedImage ?
     await uploadImageToHosting({
            hosting,
-        url:item.sourceImage,projectId,label:'rendered',
+        url:item.renderedImage,projectId,label:'rendered',
     }): null
 
 
@@ -54,7 +54,7 @@ export  const createProject = async ({item}:CreateProjectParams):Promise<DesignI
         ...rest
      } = item;
 
-     const playload = {
+      const payload = {
         ...rest,
         sourceImage:resolvedSource,
         renderedImage: resolvedRender,
@@ -62,10 +62,12 @@ export  const createProject = async ({item}:CreateProjectParams):Promise<DesignI
 
      try{
             // puter worker to store the project in kv
-            
+                // For now, return the project payload so callers can continue.
+                return payload as DesignItem;
      }
      catch(e){
         console.warn("Failed to create project with hosted images:", e);    
+          return null;
      }
 
 
