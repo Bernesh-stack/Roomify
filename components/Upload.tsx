@@ -4,10 +4,11 @@ import { useOutletContext } from 'react-router'
 import { PROGRESS_INTERVAL_MS, PROGRESS_STEP, REDIRECT_DELAY_MS } from '../lib/constant'
 
 interface UploadProps {
-    onComplete?: (base64: string) => void
+    // done uploading and processing, now we have the base64 string of the image
+    onComplete?: (base64: string) => Promise<boolean | void> | boolean | void;
 }
 
-const Upload = ({ onComplete = () => {} }: UploadProps) => {
+const Upload = ({ onComplete = async () => {} }: UploadProps) => {
     const [file, setFile] = React.useState<File | null>(null)
     const [isDragging, setIsDragging] = React.useState(false)
     const [progress, setProgress] = React.useState(0)
