@@ -15,7 +15,7 @@ export const getOrCreateHostingConfig = async (): Promise<HostingConfig | null> 
         const record =  {subdomain:created.subdomain};
 
         await puter.kv.set(HOSTING_CONFIG_KEY,record);
-
+ 
         return record;
        
 
