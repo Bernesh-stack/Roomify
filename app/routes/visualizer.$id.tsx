@@ -1,6 +1,6 @@
 import Button from 'components/ui/Button';
 import { generate3DView } from 'lib/ai.action';
-import { Box, Download, Share } from 'lucide-react';
+import { Box, Download, RefreshCcw, Share, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
@@ -37,14 +37,16 @@ const runGeneration = async() =>{
 }
 
 useEffect(() =>{
-  if(!initialImage || !hasInitialGenerated.current) return;
+  if(!initialImage || hasInitialGenerated.current) return;
+  
   if(initialRender){
     setCurrentImage(initialRender);
     hasInitialGenerated.current = true;
     return;
   }
-hasInitialGenerated.current = true;
-runGeneration()
+  
+  hasInitialGenerated.current = true;
+  runGeneration();
 },[initialImage,initialRender])
 
 
@@ -101,8 +103,24 @@ runGeneration()
 
           <div className={`render-area ${isProcessing ? 'is-processing' : ''}`}>
            {currentImage ?(
-            <img src={currentImage} alt ="Ai rendered" className=''/>
+            <img src={currentImage} alt ="Ai rendered" className='render-img'/>
+           ):(
+            <div className='render-placeholder'>
+              {initialImage && (
+                <img src={initialImage} alt='Original' className='render-fallback'/>
+              )}
+            </div>
            )}
+
+           {isProcessing && (
+           <div className='render-overlay'>
+              <div className='rendering-card'>
+                <RefreshCcw className='spinner'/>
+                <span className='subtitle'>Generating your 3D view....</span>
+
+              </div>
+           </div> 
+          )}
           </div>
           </div>
 

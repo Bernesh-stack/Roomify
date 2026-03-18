@@ -1,4 +1,4 @@
-import { puter } from "@puter/core";
+import puter from "@heyputer/puter.js";
 import { ROOMIFY_RENDER_PROMPT } from "./constant";
 
 export async function fetchAsDataUrl(url: string): Promise<string> {
@@ -18,30 +18,78 @@ export async function fetchAsDataUrl(url: string): Promise<string> {
 
 
 
+
+export function getImageDimensions(src: string): Promise<{width: number, height: number}> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve({width: img.width, height: img.height});
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
 export const generate3DView = async({sourceImage}:Generate3DViewParams) => {
-const dataUrl = sourceImage.startsWith("data:") 
-? sourceImage 
-: await fetchAsDataUrl(sourceImage);
+  const dataUrl = sourceImage.startsWith("data:") 
+    ? sourceImage 
+    : await fetchAsDataUrl(sourceImage);
 
-const base64Data = dataUrl.split(',')[1];
-const mimeType = dataUrl.split(';')[0].split(':')[1];
+  const base64Data = dataUrl.split(',')[1];
+  const mimeType = dataUrl.split(';')[0].split(':')[1];
 
+  if(!base64Data || !mimeType) throw new Error("Invalid source URL");
 
-if(!base64Data || !mimeType) throw new Error("Invalid source  URL");
-const response = await puter.ai.txt2image(ROOMIFY_RENDER_PROMPT,{
-    provider:'gemini',
-    model:'gemini-2.0-flash',
-    input_image:base64Data,
-    input_image_mime_type: mimeType,
-    ratio:{width: 1024, height: 1024},
+  try {
+    // Calculate optimal dimensions preserving aspect ratio
+    const {width, height} = await getImageDimensions(dataUrl);
+    const MAX_DIM = 1024;
+    let finalWidth = width;
+    let finalHeight = height;
 
-})
+    if (finalWidth > MAX_DIM || finalHeight > MAX_DIM) {
+      const ratio = Math.min(MAX_DIM / finalWidth, MAX_DIM / finalHeight);
+      finalWidth *= ratio;
+      finalHeight *= ratio;
+    }
 
-const rawImageUrl = (response as HTMLImageElement).src ?? null;
-if(!rawImageUrl) return {renderedImage: null,renderedPath:undefined};
+    // Round to nearest 64 for best AI model compatibility
+    finalWidth = Math.round(finalWidth / 64) * 64;
+    finalHeight = Math.round(finalHeight / 64) * 64;
 
-const renderedImage = rawImageUrl.startsWith("data:") ? rawImageUrl : await fetchAsDataUrl(rawImageUrl);
+    const response = await puter.ai.txt2img(ROOMIFY_RENDER_PROMPT, {
+      image_base64: base64Data,
+      width: finalWidth,
+      height: finalHeight,
+      // Higher steps for better quality
+      steps: 30,
+      // Guidance scale for prompt adherence
+      guidance_scale: 7.5,
+      // Model hinting can help quality
+      provider: 'openai',
+      model: 'dall-e-3', 
+      input_image: base64Data,
+      input_image_mime_type: mimeType
+    });
 
-return {renderedImage,renderedPath:undefined};
+    if (!response) {
+      throw new Error('No response from AI generation');
+    }
 
+    // Handle HTMLImageElement response from Puter SDK
+    let renderedImage: string | null = null;
+    
+    if (response instanceof HTMLImageElement || (response as any).src) {
+      const src = (response as any).src;
+      renderedImage = src.startsWith("data:") ? src : await fetchAsDataUrl(src);
+    } else if (typeof response === 'string') {
+      renderedImage = (response as string).startsWith("data:") ? response : await fetchAsDataUrl(response);
+    }
+
+    if (!renderedImage) return {renderedImage: null, renderedPath: undefined};
+
+    return {renderedImage, renderedPath: undefined};
+  } catch (error) {
+    console.error("Error generating 3D view:", JSON.stringify(error, null, 2));
+    // Return null instead of throwing to prevent crashing the UI completely
+    return {renderedImage: null, renderedPath: undefined};
+  }
 }
